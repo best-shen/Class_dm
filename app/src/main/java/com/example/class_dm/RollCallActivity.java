@@ -89,20 +89,21 @@ public class RollCallActivity extends AppCompatActivity {
         // 从适配器获取最终的点名结果
         Map<Integer, String> statusMap = rollCallAdapter.getAttendanceStatusMap();
         List<Attendance> attendanceRecords = new ArrayList<>();
-        String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
         // 将Map数据转换为List<Attendance>，准备存入数据库
         for (Map.Entry<Integer, String> entry : statusMap.entrySet()) {
             Attendance attendance = new Attendance();
             attendance.studentId = entry.getKey();
             attendance.className = currentClassName;
-            attendance.date = currentDate;
             attendance.status = entry.getValue();
-            // 【新增】设置新的字段
-            attendance.date = this.date; // 使用从弹窗传入的日期
+            attendance.sessionTimestamp = this.currentSessionId; // 使用成员变量
+
+            // 【修正】这里必须使用从弹窗传入并保存在成员变量中的日期、课程等信息
+            attendance.date = this.date;
             attendance.courseName = this.courseName;
             attendance.startPeriod = this.startPeriod;
             attendance.endPeriod = this.endPeriod;
+
             attendanceRecords.add(attendance);
         }
 

@@ -6,8 +6,8 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-// 版本号从 2 升级到 3
-@Database(entities = {ClassInfo.class, Student.class, Attendance.class}, version = 3, exportSchema = false)
+// 版本号升级
+@Database(entities = {ClassInfo.class, Student.class, Attendance.class}, version = 4, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ClassDao classDao();

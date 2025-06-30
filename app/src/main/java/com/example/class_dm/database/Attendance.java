@@ -2,9 +2,14 @@
 package com.example.class_dm.database;
 
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "attendance_records")
+@Entity(tableName = "attendance_records",
+        foreignKeys = @ForeignKey(entity = ClassInfo.class,
+                parentColumns = "name",
+                childColumns = "className",
+                onDelete = ForeignKey.CASCADE)) // 【关键】设置级联删除
 public class Attendance {
     @PrimaryKey(autoGenerate = true)
     public int id;

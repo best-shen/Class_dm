@@ -47,7 +47,7 @@
             android:id="@+id/btn_import_excel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="从Excel导入" />
+            android:text="Excel导入" />
     </LinearLayout>
 
 
