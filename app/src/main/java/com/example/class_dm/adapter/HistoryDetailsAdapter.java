@@ -54,8 +54,10 @@ public class HistoryDetailsAdapter extends RecyclerView.Adapter<HistoryDetailsAd
                 holder.tvStatus.setTextColor(Color.parseColor("#F44336")); // 红色
                 break;
             case "迟到":
-            case "早退":
                 holder.tvStatus.setTextColor(Color.parseColor("#FF9800")); // 橙色
+                break;
+            case "早退":
+                holder.tvStatus.setTextColor(Color.parseColor("#9C27B0")); // 中等紫色
                 break;
             case "请假":
                 holder.tvStatus.setTextColor(Color.parseColor("#03A9F4")); // 蓝色
