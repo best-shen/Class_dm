@@ -26,4 +26,6 @@ public interface StudentDao {
 
     @Delete
     void delete(Student student);
+    @Query("SELECT * FROM students WHERE className = :className AND studentNumber = :studentNumber LIMIT 1")
+    Student findStudentByNumber(String className, String studentNumber);
 }

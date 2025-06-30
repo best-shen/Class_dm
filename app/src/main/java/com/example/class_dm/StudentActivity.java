@@ -201,19 +201,41 @@ public class StudentActivity extends AppCompatActivity {
                 Toast.makeText(this, "学号和姓名不能为空", Toast.LENGTH_SHORT).show();
                 return;
             }
+
+            // 【核心改造】在后台线程中执行查重和保存操作
             databaseExecutor.execute(() -> {
+                // a. 先根据输入的学号，查询数据库中是否已存在该学号的学生
+                Student existingStudent = appDatabase.studentDao().findStudentByNumber(currentClassName, number);
+
+                // b. 根据不同情况进行处理
                 if (student == null) {
-                    Student newStudent = new Student();
-                    newStudent.className = currentClassName;
-                    newStudent.studentNumber = number;
-                    newStudent.name = name;
-                    appDatabase.studentDao().insert(newStudent);
+                    // 情况一：正在“添加”新学生
+                    if (existingStudent != null) {
+                        // 如果能找到，说明学号已被占用，提示用户
+                        handler.post(() -> Toast.makeText(this, "该学号已存在，请重新输入！", Toast.LENGTH_SHORT).show());
+                    } else {
+                        // 如果找不到，说明学号可用，执行插入操作
+                        Student newStudent = new Student();
+                        newStudent.className = currentClassName;
+                        newStudent.studentNumber = number;
+                        newStudent.name = name;
+                        appDatabase.studentDao().insert(newStudent);
+                        handler.post(this::loadStudents); // 刷新列表
+                    }
                 } else {
-                    student.studentNumber = number;
-                    student.name = name;
-                    appDatabase.studentDao().update(student);
+                    // 情况二：正在“编辑”旧学生
+                    // 如果能找到同号的学生，并且这个学生的ID和我们正在编辑的学生的ID不一致
+                    // 这才说明学号被“别人”占用了
+                    if (existingStudent != null && existingStudent.id != student.id) {
+                        handler.post(() -> Toast.makeText(this, "该学号已被其他学生使用，请重新输入！", Toast.LENGTH_SHORT).show());
+                    } else {
+                        // 否则，学号可用（要么没被占用，要么就是自己正在用），执行更新操作
+                        student.studentNumber = number;
+                        student.name = name;
+                        appDatabase.studentDao().update(student);
+                        handler.post(this::loadStudents); // 刷新列表
+                    }
                 }
-                handler.post(this::loadStudents);
             });
         });
         builder.setNegativeButton("取消", null);

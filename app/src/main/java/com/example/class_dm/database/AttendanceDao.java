@@ -47,4 +47,5 @@ public interface AttendanceDao {
     // 更新单条考勤记录
     @Update
     void update(Attendance attendance);
+
 }
