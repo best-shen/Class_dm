@@ -21,6 +21,7 @@ import android.content.Intent;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import androidx.appcompat.widget.Toolbar;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,6 +34,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // 【新增】初始化Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar_main);
+        toolbar.setTitle(R.string.app_name); // 设置标题为App名称
+        setSupportActionBar(toolbar);
 
         // 初始化数据库实例
         appDatabase = AppDatabase.getDatabase(this);
@@ -86,13 +91,26 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            ClassInfo newClass = new ClassInfo();
-            newClass.name = className;
-
+            // 【核心改造】在后台线程中先检查，再插入
             databaseExecutor.execute(() -> {
-                appDatabase.classDao().insert(newClass);
-                // 操作完成后回到主线程刷新列表
-                handler.post(this::loadClasses);
+                // a. 先用新方法查询数据库中是否已存在同名班级
+                ClassInfo existingClass = appDatabase.classDao().findClassByName(className);
+
+                // b. 判断查询结果
+                if (existingClass != null) {
+                    // 如果 existingClass 不是 null，说明班级已存在
+                    // 回到主线程给用户提示
+                    handler.post(() -> {
+                        Toast.makeText(this, "该班级已存在，请勿重复创建！", Toast.LENGTH_SHORT).show();
+                    });
+                } else {
+                    // 如果是 null，说明班级不存在，可以安全地插入
+                    ClassInfo newClass = new ClassInfo();
+                    newClass.name = className;
+                    appDatabase.classDao().insert(newClass);
+                    // 插入成功后，回到主线程刷新列表
+                    handler.post(this::loadClasses);
+                }
             });
         });
         builder.setNegativeButton("取消", (dialog, which) -> dialog.cancel());

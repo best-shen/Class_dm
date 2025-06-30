@@ -14,6 +14,9 @@ public interface ClassDao {
     @Query("SELECT * FROM classes ORDER BY name ASC")
     List<ClassInfo> getAllClasses();
 
+    // 【新增】根据名称查询班级的方法
+    @Query("SELECT * FROM classes WHERE name = :name LIMIT 1")
+    ClassInfo findClassByName(String name);
     @Insert
     void insert(ClassInfo classInfo);
 
@@ -22,4 +25,6 @@ public interface ClassDao {
 
     @Delete
     void delete(ClassInfo classInfo);
+
+
 }
