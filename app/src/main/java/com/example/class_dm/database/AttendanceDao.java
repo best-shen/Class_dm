@@ -47,5 +47,15 @@ public interface AttendanceDao {
     // 更新单条考勤记录
     @Update
     void update(Attendance attendance);
+    // 获取一个班级点名过的所有课程名称（不重复）
+    @Query("SELECT DISTINCT courseName FROM attendance_records WHERE className = :className")
+    List<String> getDistinctCourseNamesByClass(String className);
 
+    // 获取某课程的所有考勤记录
+    @Query("SELECT * FROM attendance_records WHERE className = :className AND courseName = :courseName")
+    List<Attendance> getRecordsByCourse(String className, String courseName);
+
+    // 统计某课程总共点名了多少个场次（用于计算出勤率）
+    @Query("SELECT COUNT(DISTINCT sessionTimestamp) FROM attendance_records WHERE className = :className AND courseName = :courseName")
+    long countSessionsForCourse(String className, String courseName);
 }
