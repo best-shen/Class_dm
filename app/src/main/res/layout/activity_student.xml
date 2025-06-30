@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".StudentActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/Theme.Class_dm.AppBarOverlay">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_students"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/Theme.Class_dm.PopupOverlay" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp">
+
+        <Button
+            android:id="@+id/btn_view_history"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="查看历史"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
+            android:id="@+id/btn_start_roll_call"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="开始点名"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
+            android:id="@+id/btn_import_excel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="从Excel导入" />
+    </LinearLayout>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_students"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_marginTop="50dp"
+        tools:listitem="@layout/item_student" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add_student"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_input_add"
+        android:contentDescription="添加学生" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

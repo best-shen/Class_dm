@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:gravity="center_vertical">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_student_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="学生姓名"
+            android:textSize="18sp"
+            android:textColor="@android:color/black"/>
+
+        <TextView
+            android:id="@+id/tv_student_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="20220001"
+            android:textSize="14sp"/>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/iv_edit_student"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@android:drawable/ic_menu_edit"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="编辑"/>
+
+    <ImageView
+        android:id="@+id/iv_delete_student"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@android:drawable/ic_menu_delete"
+        android:contentDescription="删除"/>
+
+</LinearLayout>

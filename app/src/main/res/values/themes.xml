@@ -1,0 +1,10 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.Class_dm" parent="Theme.Material3.DayNight.NoActionBar">
+    </style>
+
+    <style name="Theme.Class_dm" parent="Base.Theme.Class_dm" />
+
+    <style name="Theme.Class_dm.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.Class_dm.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+</resources>

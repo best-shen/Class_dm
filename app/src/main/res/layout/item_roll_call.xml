@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:layout_marginBottom="8dp"
+    android:background="@android:color/white">
+
+    <TextView
+        android:id="@+id/tv_student_name_roll_call"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="学生姓名"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"/>
+
+    <RadioGroup
+        android:id="@+id/rg_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <RadioButton
+            android:id="@+id/rb_present"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="到课"
+            android:checked="true"/>
+
+        <RadioButton
+            android:id="@+id/rb_absent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="缺勤"/>
+
+        <RadioButton
+            android:id="@+id/rb_late"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="迟到"/>
+
+        <RadioButton
+            android:id="@+id/rb_leave_early"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="早退"/>
+
+        <RadioButton
+            android:id="@+id/rb_leave_of_absence"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="请假"/>
+    </RadioGroup>
+
+</LinearLayout>
