@@ -21,21 +21,39 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <LinearLayout
+        android:id="@+id/bottom_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <Button
+            android:id="@+id/btn_random_roll_call"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="随机点名"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
+            android:id="@+id/btn_finish_roll_call"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="完成点名并保存"
+            android:layout_marginStart="8dp"/>
+
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_roll_call"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/app_bar"
-        android:layout_above="@+id/btn_finish_roll_call"
+        android:layout_above="@id/bottom_buttons"
         android:padding="8dp"
         tools:listitem="@layout/item_roll_call" />
-
-    <Button
-        android:id="@+id/btn_finish_roll_call"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
-        android:text="完成点名并保存" />
 
 </RelativeLayout>

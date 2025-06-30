@@ -26,7 +26,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import androidx.appcompat.app.AlertDialog; // 【新增】
+import java.util.Random; // 【新增】
 public class RollCallActivity extends AppCompatActivity {
 
     private String currentClassName;
@@ -66,6 +67,10 @@ public class RollCallActivity extends AppCompatActivity {
         // 设置“完成点名”按钮的点击事件
         Button btnFinish = findViewById(R.id.btn_finish_roll_call);
         btnFinish.setOnClickListener(v -> saveAttendanceRecords());
+
+        // 【新增】设置“随机点名”按钮的点击事件
+        Button btnRandom = findViewById(R.id.btn_random_roll_call);
+        btnRandom.setOnClickListener(v -> performRandomRollCall());
 
         // 加载学生并设置RecyclerView
         loadStudentsAndSetupAdapter();
@@ -117,5 +122,30 @@ public class RollCallActivity extends AppCompatActivity {
                 finish(); // 保存成功后关闭点名页面
             });
         });
+    }
+    private void performRandomRollCall() {
+        if (studentList == null || studentList.isEmpty()) {
+            Toast.makeText(this, "班级中没有学生，无法随机点名", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 1. 随机抽取一名学生
+        int randomIndex = new Random().nextInt(studentList.size());
+        Student selectedStudent = studentList.get(randomIndex);
+
+        // 2. 弹窗显示学生姓名
+        new AlertDialog.Builder(this)
+                .setTitle("随机选中")
+                .setMessage("选中学员: " + selectedStudent.name)
+                .setPositiveButton("确定", null)
+                .show();
+
+        // 3. 高亮显示并滚动到该学生位置
+        // a. 让Adapter知道要高亮哪一项
+        rollCallAdapter.setHighlightedPosition(randomIndex);
+
+        // b. 让RecyclerView平滑地滚动到那一项
+        RecyclerView recyclerView = findViewById(R.id.recycler_view_roll_call);
+        recyclerView.smoothScrollToPosition(randomIndex);
     }
 }
