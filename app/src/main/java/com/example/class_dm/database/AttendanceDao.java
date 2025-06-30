@@ -33,4 +33,7 @@ public interface AttendanceDao {
     @Query("SELECT s.studentNumber, s.name as studentName, a.status FROM attendance_records a " +
             "JOIN students s ON a.studentId = s.id WHERE a.sessionTimestamp = :sessionId")
     List<AttendanceDetails> getDetailsBySessionId(long sessionId);
+
+    @Query("DELETE FROM attendance_records WHERE sessionTimestamp = :sessionId")
+    void deleteBySessionId(long sessionId);
 }

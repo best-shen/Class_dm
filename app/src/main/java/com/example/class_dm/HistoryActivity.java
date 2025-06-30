@@ -28,7 +28,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-
+import androidx.appcompat.app.AlertDialog;
 public class HistoryActivity extends AppCompatActivity {
 
     private String currentClassName;
@@ -62,49 +62,64 @@ public class HistoryActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // 【新增】设置删除按钮监听器
+        historyAdapter.setOnDeleteClickListener(session -> {
+            // 弹出一个确认对话框，防止误删
+            new AlertDialog.Builder(this)
+                    .setTitle("删除记录")
+                    .setMessage("确定要删除这次的点名记录吗？\n" + session.getSessionTime())
+                    .setPositiveButton("删除", (dialog, which) -> deleteSession(session.getSessionId()))
+                    .setNegativeButton("取消", null)
+                    .show();
+        });
+
         loadAllHistory();
     }
+    // 【新增】删除场次记录的方法
+    private void deleteSession(long sessionId) {
+        databaseExecutor.execute(() -> {
+            appDatabase.attendanceDao().deleteBySessionId(sessionId);
 
+            // 【核心修改】在后台任务完成删除后，回到主线程做两件事：
+            handler.post(() -> {
+                // 1. 给出正确的成功提示
+                Toast.makeText(this, "删除成功", Toast.LENGTH_SHORT).show();
+                // 2. 再去重新加载数据，刷新界面
+                loadAllHistory();
+            });
+        });
+    }
+    // 在 HistoryActivity.java 中
     private void loadAllHistory() {
         databaseExecutor.execute(() -> {
-            // 1. 获取所有场次信息
+            // 1. 正常从数据库获取所有场次信息
             List<HistorySessionInfo> sessions = appDatabase.attendanceDao().getAllSessionsForClass(currentClassName);
 
-            if (sessions.isEmpty()) {
-                handler.post(() -> Toast.makeText(this, "该班级还没有任何考勤记录", Toast.LENGTH_SHORT).show());
-                return;
-            }
-
+            // 2. 准备一个（可能是空的）列表，用于存放最终展示在界面上的卡片信息
             List<SessionSummary> sessionSummaries = new ArrayList<>();
 
-            // 2. 【请仔细核对这个循环】
-            for (HistorySessionInfo sessionInfo : sessions) {
-
-                // a. 【关键检查点1】
-                //    这行代码必须在 for 循环内部，它为每个场次都重新查询一次详情。
-                //    变量名必须是新的，比如 detailsForThisSession，避免和外部变量混淆。
-                List<AttendanceDetails> detailsForThisSession = appDatabase.attendanceDao().getDetailsBySessionId(sessionInfo.sessionTimestamp);
-
-                // b. 【关键检查点2】
-                //    下面的所有 stream() 计算，都必须基于这个在循环内部刚刚创建的 `detailsForThisSession` 列表。
-                long presentCount = detailsForThisSession.stream().filter(d -> d.status.equals("到课")).count();
-                long absentCount = detailsForThisSession.stream().filter(d -> d.status.equals("缺勤")).count();
-                long lateCount = detailsForThisSession.stream().filter(d -> d.status.equals("迟到")).count();
-                long earlyCount = detailsForThisSession.stream().filter(d -> d.status.equals("早退")).count();
-                long leaveCount = detailsForThisSession.stream().filter(d -> d.status.equals("请假")).count();
-
-                // ... 后续格式化字符串和添加到 sessionSummaries 列表的代码 ...
-                String sessionTitle = sessionInfo.courseName;
-                String sessionSubtitle = String.format(Locale.CHINA, "%s  第%d-%d节",
-                        sessionInfo.date, sessionInfo.startPeriod, sessionInfo.endPeriod);
-                String statistics = String.format(Locale.CHINA,
-                        "到课:%d | 缺勤:%d | 迟到:%d | 早退:%d | 请假:%d",
-                        presentCount, absentCount, lateCount, earlyCount, leaveCount);
-
-                sessionSummaries.add(new SessionSummary(sessionInfo.sessionTimestamp, sessionTitle + "\n" + sessionSubtitle, statistics));
+            // 3. 【关键】如果sessions列表不为空，才进行遍历和数据处理
+            if (!sessions.isEmpty()) {
+                for (HistorySessionInfo sessionInfo : sessions) {
+                    // ... 这部分内部逻辑完全不变 ...
+                    List<AttendanceDetails> detailsForThisSession = appDatabase.attendanceDao().getDetailsBySessionId(sessionInfo.sessionTimestamp);
+                    long presentCount = detailsForThisSession.stream().filter(d -> d.status.equals("到课")).count();
+                    long absentCount = detailsForThisSession.stream().filter(d -> d.status.equals("缺勤")).count();
+                    long lateCount = detailsForThisSession.stream().filter(d -> d.status.equals("迟到")).count();
+                    long earlyCount = detailsForThisSession.stream().filter(d -> d.status.equals("早退")).count();
+                    long leaveCount = detailsForThisSession.stream().filter(d -> d.status.equals("请假")).count();
+                    String sessionTitle = sessionInfo.courseName;
+                    String sessionSubtitle = String.format(Locale.CHINA, "%s  第%d-%d节",
+                            sessionInfo.date, sessionInfo.startPeriod, sessionInfo.endPeriod);
+                    String statistics = String.format(Locale.CHINA,
+                            "到课:%d | 缺勤:%d | 迟到:%d | 早退:%d | 请假:%d",
+                            presentCount, absentCount, lateCount, earlyCount, leaveCount);
+                    sessionSummaries.add(new SessionSummary(sessionInfo.sessionTimestamp, sessionTitle + "\n" + sessionSubtitle, statistics));
+                }
             }
 
-            // 3. 更新UI
+            // 4. 【关键】无论sessionSummaries是否为空，都把这个最终的列表交给Adapter去刷新UI。
+            // 如果列表是空的，RecyclerView就会被清空。
             handler.post(() -> historyAdapter.setSessionList(sessionSummaries));
         });
     }

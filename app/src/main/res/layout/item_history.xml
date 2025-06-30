@@ -10,29 +10,46 @@
     app:cardCornerRadius="8dp"
     app:cardElevation="4dp">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tv_session_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="点名场次: 14:30:55"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"/>
+        <ImageView
+            android:id="@+id/iv_delete_session"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:src="@android:drawable/ic_menu_delete"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="删除该条记录" />
 
-        <TextView
-            android:id="@+id/tv_session_stats"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="到课: 28 | 缺勤: 1 | 迟到: 1"
-            android:textSize="16sp"/>
+            android:orientation="vertical"
+            android:layout_toStartOf="@id/iv_delete_session"
+            android:layout_alignParentStart="true">
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/tv_session_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="点名场次: 14:30:55"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"/>
+
+            <TextView
+                android:id="@+id/tv_session_stats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="到课: 28 | 缺勤: 1 | 迟到: 1"
+                android:textSize="16sp"/>
+        </LinearLayout>
+
+    </RelativeLayout>
 
 </androidx.cardview.widget.CardView>
