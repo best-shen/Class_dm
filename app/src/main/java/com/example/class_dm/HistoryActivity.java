@@ -29,6 +29,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import androidx.appcompat.app.AlertDialog;
+import androidx.activity.result.ActivityResultLauncher; // 【新增】
+import androidx.activity.result.contract.ActivityResultContracts; // 【新增】
 public class HistoryActivity extends AppCompatActivity {
 
     private String currentClassName;
@@ -36,7 +38,7 @@ public class HistoryActivity extends AppCompatActivity {
     private HistoryAdapter historyAdapter;
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler(Looper.getMainLooper());
-
+    private ActivityResultLauncher<Intent> detailsLauncher; // 【新增】
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +46,11 @@ public class HistoryActivity extends AppCompatActivity {
 
         currentClassName = getIntent().getStringExtra("CLASS_NAME");
         appDatabase = AppDatabase.getDatabase(this);
-
+        // 【新增】初始化Launcher。当从详情页返回时，无论结果如何，都调用loadAllHistory()刷新列表
+        detailsLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> loadAllHistory()
+        );
         Toolbar toolbar = findViewById(R.id.toolbar_history);
         toolbar.setTitle(currentClassName + " - 历史考勤");
         setSupportActionBar(toolbar);
@@ -56,10 +62,11 @@ public class HistoryActivity extends AppCompatActivity {
         historyAdapter = new HistoryAdapter();
         recyclerView.setAdapter(historyAdapter);
 
+        // 【修改】将原来的startActivity(intent)改为使用launcher启动
         historyAdapter.setOnItemClickListener(session -> {
             Intent intent = new Intent(HistoryActivity.this, HistoryDetailsActivity.class);
             intent.putExtra("SESSION_ID", session.getSessionId());
-            startActivity(intent);
+            detailsLauncher.launch(intent); // 【修改】
         });
 
         // 【新增】设置删除按钮监听器

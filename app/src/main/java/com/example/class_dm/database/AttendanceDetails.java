@@ -6,4 +6,5 @@ public class AttendanceDetails {
     public String studentNumber;
     public String studentName;
     public String status;
+    public int studentId; // 【新增】
 }

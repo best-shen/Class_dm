@@ -16,7 +16,16 @@ import java.util.List;
 public class HistoryDetailsAdapter extends RecyclerView.Adapter<HistoryDetailsAdapter.DetailsViewHolder> {
 
     private List<AttendanceDetails> detailsList = new ArrayList<>();
+    private OnItemClickListener listener; // 【新增】
+    // 【新增】定义一个监听器接口
+    public interface OnItemClickListener {
+        void onItemClick(AttendanceDetails details);
+    }
 
+    // 【新增】提供一个设置监听器的方法
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
+    }
     @NonNull
     @Override
     public DetailsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -30,7 +39,12 @@ public class HistoryDetailsAdapter extends RecyclerView.Adapter<HistoryDetailsAd
         holder.tvStudentName.setText(details.studentName);
         holder.tvStudentNumber.setText(details.studentNumber);
         holder.tvStatus.setText(details.status);
-
+        // 【新增】为列表项（itemView）设置点击事件
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onItemClick(details);
+            }
+        });
         // 根据不同状态设置不同颜色，保持体验一致
         switch (details.status) {
             case "到课":

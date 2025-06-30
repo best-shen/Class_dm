@@ -4,6 +4,8 @@ package com.example.class_dm.database;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
+
 import java.util.List;
 
 @Dao
@@ -30,10 +32,19 @@ public interface AttendanceDao {
     List<HistorySessionInfo> getAllSessionsForClass(String className);
 
     // 这个方法用于根据场次ID，精确地获取这一个场次所有学生的出勤详情
-    @Query("SELECT s.studentNumber, s.name as studentName, a.status FROM attendance_records a " +
-            "JOIN students s ON a.studentId = s.id WHERE a.sessionTimestamp = :sessionId")
+    @Query("SELECT s.id as studentId, s.studentNumber, s.name as studentName, a.status FROM attendance_records a " +
+            "JOIN students s ON a.studentId = s.id WHERE a.sessionTimestamp = :sessionId " +
+            "ORDER BY s.studentNumber ASC") // 【新增】按学号升序排列
     List<AttendanceDetails> getDetailsBySessionId(long sessionId);
 
     @Query("DELETE FROM attendance_records WHERE sessionTimestamp = :sessionId")
     void deleteBySessionId(long sessionId);
+
+    // 根据学生ID和场次ID查询单条原始的考勤记录对象
+    @Query("SELECT * FROM attendance_records WHERE studentId = :studentId AND sessionTimestamp = :sessionId")
+    Attendance getAttendanceByStudentAndSession(int studentId, long sessionId);
+
+    // 更新单条考勤记录
+    @Update
+    void update(Attendance attendance);
 }
