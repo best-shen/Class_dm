@@ -256,6 +256,8 @@ public class StudentActivity extends AppCompatActivity {
                 .show();
     }
 
+// 在 StudentActivity.java 中，用这个新方法替换旧的 showSetupRollCallDialog 方法
+
     private void showSetupRollCallDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("设置点名信息");
@@ -268,7 +270,6 @@ public class StudentActivity extends AppCompatActivity {
         final NumberPicker npStart = dialogView.findViewById(R.id.np_start_period);
         final NumberPicker npEnd = dialogView.findViewById(R.id.np_end_period);
 
-        // 初始化日期按钮和节次选择器
         final java.util.Calendar calendar = java.util.Calendar.getInstance();
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
         btnPickDate.setText(sdf.format(calendar.getTime()));
@@ -278,38 +279,76 @@ public class StudentActivity extends AppCompatActivity {
         npEnd.setMinValue(1);
         npEnd.setMaxValue(11);
 
-        // 设置日期选择
         btnPickDate.setOnClickListener(v -> new android.app.DatePickerDialog(StudentActivity.this, (view, year, month, day) -> {
             calendar.set(year, month, day);
             btnPickDate.setText(sdf.format(calendar.getTime()));
         }, calendar.get(java.util.Calendar.YEAR), calendar.get(java.util.Calendar.MONTH), calendar.get(java.util.Calendar.DAY_OF_MONTH)).show());
 
         builder.setView(dialogView);
-        builder.setPositiveButton("开始点名", (dialog, which) -> {
-            String courseName = etCourseName.getText().toString().trim();
-            int startPeriod = npStart.getValue();
-            int endPeriod = npEnd.getValue();
+        builder.setPositiveButton("开始点名", null); // 【关键修改】我们先将监听器设为null，以便自定义
+        builder.setNegativeButton("取消", (dialog, which) -> dialog.dismiss());
 
-            if (TextUtils.isEmpty(courseName)) {
-                Toast.makeText(this, "课程名称不能为空", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (startPeriod > endPeriod) {
-                Toast.makeText(this, "开始节次不能大于结束节次", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        AlertDialog dialog = builder.create(); // 先创建dialog
 
-            // 验证通过，打包所有信息，启动点名页面
-            Intent intent = new Intent(StudentActivity.this, RollCallActivity.class);
-            intent.putExtra("CLASS_NAME", currentClassName);
-            intent.putExtra("SESSION_ID", System.currentTimeMillis());
-            intent.putExtra("COURSE_NAME", courseName);
-            intent.putExtra("DATE", btnPickDate.getText().toString());
-            intent.putExtra("START_PERIOD", startPeriod);
-            intent.putExtra("END_PERIOD", endPeriod);
-            startActivity(intent);
+        // 【关键修改】为“开始点名”按钮设置自定义的点击监听器
+        dialog.setOnShowListener(d -> {
+            Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            positiveButton.setOnClickListener(v -> {
+                String courseName = etCourseName.getText().toString().trim();
+                String date = btnPickDate.getText().toString();
+                int startPeriod = npStart.getValue();
+                int endPeriod = npEnd.getValue();
+
+                // 输入验证
+                if (TextUtils.isEmpty(courseName)) {
+                    Toast.makeText(this, "课程名称不能为空", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (startPeriod > endPeriod) {
+                    Toast.makeText(this, "开始节次不能大于结束节次", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // 在后台线程执行查重操作
+                databaseExecutor.execute(() -> {
+                    Long existingSessionId = appDatabase.attendanceDao().findSessionIdByDetails(
+                            currentClassName, courseName, date, startPeriod, endPeriod);
+
+                    handler.post(() -> {
+                        if (existingSessionId != null) {
+                            // 如果找到了已存在的场次，弹出二次确认对话框
+                            new AlertDialog.Builder(this)
+                                    .setTitle("记录已存在")
+                                    .setMessage("已存在一个完全相同的点名场次，是否要覆盖它？")
+                                    .setPositiveButton("覆盖", (dialogInterface, i) -> {
+                                        // 用户选择覆盖，使用旧的sessionId启动点名页
+                                        proceedToRollCall(existingSessionId, courseName, date, startPeriod, endPeriod);
+                                        dialog.dismiss(); // 关闭设置弹窗
+                                    })
+                                    .setNegativeButton("取消", null)
+                                    .show();
+                        } else {
+                            // 如果没找到，是新场次，生成新的sessionId并启动点名页
+                            proceedToRollCall(System.currentTimeMillis(), courseName, date, startPeriod, endPeriod);
+                            dialog.dismiss(); // 关闭设置弹窗
+                        }
+                    });
+                });
+            });
         });
-        builder.setNegativeButton("取消", null);
-        builder.show();
+
+        dialog.show();
+    }
+
+    // 【新增】一个用于跳转到点名页的辅助方法，避免代码重复
+    private void proceedToRollCall(long sessionId, String courseName, String date, int startPeriod, int endPeriod) {
+        Intent intent = new Intent(StudentActivity.this, RollCallActivity.class);
+        intent.putExtra("CLASS_NAME", currentClassName);
+        intent.putExtra("SESSION_ID", sessionId);
+        intent.putExtra("COURSE_NAME", courseName);
+        intent.putExtra("DATE", date);
+        intent.putExtra("START_PERIOD", startPeriod);
+        intent.putExtra("END_PERIOD", endPeriod);
+        startActivity(intent);
     }
 }

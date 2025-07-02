@@ -89,21 +89,21 @@ public class RollCallActivity extends AppCompatActivity {
     }
 
     private void saveAttendanceRecords() {
-        if (rollCallAdapter == null) return;
+        if (rollCallAdapter == null) {
+            return;
+        }
 
-        // 从适配器获取最终的点名结果
         Map<Integer, String> statusMap = rollCallAdapter.getAttendanceStatusMap();
         List<Attendance> attendanceRecords = new ArrayList<>();
 
-        // 将Map数据转换为List<Attendance>，准备存入数据库
         for (Map.Entry<Integer, String> entry : statusMap.entrySet()) {
             Attendance attendance = new Attendance();
             attendance.studentId = entry.getKey();
             attendance.className = currentClassName;
             attendance.status = entry.getValue();
-            attendance.sessionTimestamp = this.currentSessionId; // 使用成员变量
 
-            // 【修正】这里必须使用从弹窗传入并保存在成员变量中的日期、课程等信息
+            // 确保所有记录都使用了正确的、从上一个页面传来的场次信息
+            attendance.sessionTimestamp = this.currentSessionId;
             attendance.date = this.date;
             attendance.courseName = this.courseName;
             attendance.startPeriod = this.startPeriod;
@@ -112,11 +112,16 @@ public class RollCallActivity extends AppCompatActivity {
             attendanceRecords.add(attendance);
         }
 
-        // 在后台线程执行数据库插入操作
+        // 【核心改造】使用数据库事务来保证数据一致性
         databaseExecutor.execute(() -> {
-            // 注意：这里是简单地插入。如果需要防止同一天重复点名，需要先查询再插入或更新。
-            // 为简化流程，我们先直接插入。
-            appDatabase.attendanceDao().insertAll(attendanceRecords);
+            appDatabase.runInTransaction(() -> {
+                // 1. 先根据场次ID删除该场次已存在的所有旧记录
+                appDatabase.attendanceDao().deleteBySessionId(currentSessionId);
+                // 2. 再插入本次点名的全新记录
+                appDatabase.attendanceDao().insertAll(attendanceRecords);
+            });
+
+            // 操作完成后，在主线程提示用户
             handler.post(() -> {
                 Toast.makeText(this, "点名记录已保存！", Toast.LENGTH_SHORT).show();
                 finish(); // 保存成功后关闭点名页面

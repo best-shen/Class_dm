@@ -58,4 +58,9 @@ public interface AttendanceDao {
     // 统计某课程总共点名了多少个场次（用于计算出勤率）
     @Query("SELECT COUNT(DISTINCT sessionTimestamp) FROM attendance_records WHERE className = :className AND courseName = :courseName")
     long countSessionsForCourse(String className, String courseName);
+
+    @Query("SELECT sessionTimestamp FROM attendance_records WHERE " +
+            "className = :className AND courseName = :courseName AND date = :date AND " +
+            "startPeriod = :startPeriod AND endPeriod = :endPeriod LIMIT 1")
+    Long findSessionIdByDetails(String className, String courseName, String date, int startPeriod, int endPeriod);
 }
